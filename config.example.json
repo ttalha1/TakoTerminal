@@ -1,0 +1,8 @@
+{
+  "tariff": {
+    "bw_single": 1.50,
+    "bw_duplex": 1.25,
+    "color_single": 4.00,
+    "color_duplex": 3.40
+  }
+}

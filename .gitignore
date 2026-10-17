@@ -1,0 +1,45 @@
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python Cache & Bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environment Variables & Secrets (Özel API Anahtarları)
+.env
+.env.local
+.env.*.local
+
+# Kiosk Dosya Yüklemeleri ve Geçici Veriler
+kiosk_uploads/
+tmp_kiosk_uploads/
+*.zip
+
+# Cloudflare Tünel ve Loglar
+cloudflared.exe
+cloudflared.log
+tunnel_url.txt
+
+# Yerel Fiyat Yapılandırması (Kullanıcıya özel)
+config.json
+
+# IDE & Editör
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# İşletim Sistemi Kalıntıları
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# PyInstaller / Build
+build/
+dist/
+*.spec
