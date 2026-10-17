@@ -3,10 +3,23 @@ import sys
 import time
 import re
 import socket
+import shutil
 import subprocess
 import threading
 import webbrowser
 from pathlib import Path
+
+# PyInstaller --windowed / --noconsole modunda stdout/stderr koruması
+if sys.stdout is None:
+    try:
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+    except Exception:
+        pass
+if sys.stderr is None:
+    try:
+        sys.stderr = open(os.devnull, "w", encoding="utf-8")
+    except Exception:
+        pass
 
 if sys.platform == "win32":
     try:
@@ -20,7 +33,6 @@ if getattr(sys, "frozen", False):
 else:
     BASE_DIR = Path(__file__).resolve().parent
 
-
 def get_local_ip():
     try:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -32,17 +44,25 @@ def get_local_ip():
         return "127.0.0.1"
 
 def ensure_cloudflared(cloudflared_exe: Path):
-    """cloudflared.exe yoksa GitHub üzerinden otomatik indirir."""
-    if not cloudflared_exe.exists():
-        print("[TAKOTERMINAL] 4G/5G tünel motoru (cloudflared.exe) bulunamadı.")
-        print("[TAKOTERMINAL] Resmi kaynaktan otomatik indiriliyor, lütfen bekleyiniz...")
-        url = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
-        try:
-            import urllib.request
-            urllib.request.urlretrieve(url, str(cloudflared_exe))
-            print("[TAKOTERMINAL] cloudflared.exe başarıyla indirildi ve hazırlandı.")
-        except Exception as e:
-            print(f"[UYARI] cloudflared otomatik indirilemedi ({e}). Sistem yerel ağ üzerinden çalışacak.")
+    """cloudflared.exe kontrol edilir; paket içine gömülmüşse anında çıkarılır, yoksa sessizce indirilir."""
+    if cloudflared_exe.exists():
+        return
+    # 1. PyInstaller _MEIPASS içine gömüldüyse oradan anında kopyala
+    if hasattr(sys, "_MEIPASS"):
+        bundled = Path(sys._MEIPASS) / "cloudflared.exe"
+        if bundled.exists():
+            try:
+                shutil.copy2(bundled, cloudflared_exe)
+                return
+            except Exception:
+                pass
+    # 2. Sessiz indirme yedeği
+    url = "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe"
+    try:
+        import urllib.request
+        urllib.request.urlretrieve(url, str(cloudflared_exe))
+    except Exception:
+        pass
 
 def watch_cloudflared_log(proc, log_file: Path):
     """cloudflared.log dosyasını dinleyerek trycloudflare.com URL'ini yakalar."""
@@ -64,7 +84,6 @@ def watch_cloudflared_log(proc, log_file: Path):
             pass
 
     if found_url:
-        print(f"\n[CLOUDFLARE 4G/5G TÜNEL HAZIR] 👉 Mobil İnternet Linki: {found_url}/mobile\n")
         try:
             (BASE_DIR / "tunnel_url.txt").write_text(found_url, encoding="utf-8")
             import urllib.request
@@ -75,20 +94,11 @@ def watch_cloudflared_log(proc, log_file: Path):
                 headers={"Content-Type": "application/json"}
             )
             urllib.request.urlopen(req, timeout=3)
-        except Exception as e:
+        except Exception:
             pass
-    else:
-        print("[BİLGİ] Dış internet tüneli bekleniyor. Yerel Wi-Fi modu devrede.")
 
 def main():
     local_ip = get_local_ip()
-    print("\n" + "="*70)
-    print("           🖨️  TAKOTERMINAL - AKILLI BASKI KİOSK SİSTEMİ")
-    print("="*70)
-    print(f"🏠 Yerel Wi-Fi IP Adresi:     http://{local_ip}:8000/mobile")
-    print("🖥️  Ana Kiosk Ekranı:          http://localhost:8000/kiosk")
-    print("🌐 Cloudflare 4G/5G Tüneli:   Açılıyor (Ücretsiz & Sıfır Maliyet)...")
-    print("="*70 + "\n")
 
     cloudflared_exe = BASE_DIR / "cloudflared.exe"
     ensure_cloudflared(cloudflared_exe)
@@ -100,20 +110,27 @@ def main():
         except Exception:
             pass
 
-    # 1. Cloudflare Tünel Sürecini Başlat
+    # 1. Cloudflare Tünel Sürecini Başlat (Penceresiz, sessiz)
     cf_proc = None
     if cloudflared_exe.exists():
         cf_cmd = [str(cloudflared_exe), "tunnel", "--url", "http://127.0.0.1:8000", "--logfile", str(log_file)]
-        cf_proc = subprocess.Popen(cf_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+        cf_proc = subprocess.Popen(
+            cf_cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            creationflags=creationflags
+        )
         watcher_thread = threading.Thread(target=watch_cloudflared_log, args=(cf_proc, log_file), daemon=True)
         watcher_thread.start()
 
-    # 2. Tarayıcıda Kiosk Ekranını Otomatik Aç (1.5 saniye sonra)
+    # 2. Tarayıcıda Kiosk Ekranını Otomatik Aç (1 saniye sonra)
     def open_browser():
-        time.sleep(1.5)
+        time.sleep(1.0)
         webbrowser.open("http://localhost:8000/kiosk")
 
     threading.Thread(target=open_browser, daemon=True).start()
+
 
     # 3. Uvicorn Sunucusunu Başlat
     try:

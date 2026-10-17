@@ -394,7 +394,7 @@ def index():
     <html lang="tr">
     <head>
         <meta charset="UTF-8">
-        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
+        <link rel="icon" type="image/png" href="/assets/logo.png?v=2">
         <title>TakoTerminal</title>
         <style>
             body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0f172a; color: white; }
@@ -403,12 +403,12 @@ def index():
             a:hover { transform: translateY(-2px); }
             .btn-kiosk { background: #6366f1; color: white; }
             .btn-mobile { background: #10b981; color: white; }
-            .logo-img { width: 110px; height: 110px; margin: 0 auto 1.25rem; display: block; border-radius: 1.75rem; box-shadow: 0 10px 25px rgba(99,102,241,0.3); }
+            .logo-img { width: 130px; height: 130px; margin: 0 auto 1.25rem; display: block; border-radius: 2rem; box-shadow: 0 10px 25px rgba(99,102,241,0.3); object-fit: contain; }
         </style>
     </head>
     <body>
         <div class="card">
-            <img src="/assets/logo.svg" alt="TakoTerminal" class="logo-img">
+            <img src="/assets/logo.png?v=2" alt="TakoTerminal" class="logo-img">
             <h2 style="margin: 0; font-size: 1.75rem;">TakoTerminal</h2>
             <p style="color: #94a3b8; margin: 0.5rem 0 1.5rem; font-size: 0.9rem;">Akıllı Kırtasiye Baskı ve Fotokopi Terminali</p>
             <a href="/kiosk" class="btn-kiosk">🖥️ Ana PC Kiosk Ekranı</a>
@@ -695,7 +695,7 @@ def kiosk_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
+        <link rel="icon" type="image/png" href="/assets/logo.png?v=2">
         <title>TakoTerminal | Kiosk Paneli</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -709,7 +709,7 @@ def kiosk_page():
         <!-- ÜST BİLGİ ÇUBUĞU -->
         <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50 backdrop-blur">
             <div class="flex items-center space-x-3.5">
-                <img src="/assets/logo.svg" class="w-11 h-11 rounded-2xl shadow-lg shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain transition-transform hover:scale-105 duration-300" alt="TakoTerminal Logo">
+                <img src="/assets/logo.png?v=2" class="w-12 h-12 rounded-2xl shadow-lg shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain transition-transform hover:scale-105 duration-300" alt="TakoTerminal Logo">
                 <div>
                     <h1 class="text-xl font-black bg-gradient-to-r from-indigo-300 via-sky-300 to-cyan-300 bg-clip-text text-transparent tracking-tight">TakoTerminal</h1>
                     <p class="text-xs text-slate-400">Canlı Kiosk & Çoklu Sipariş Takip Paneli</p>
@@ -741,7 +741,7 @@ def kiosk_page():
                 <div class="w-full text-center flex flex-col items-center">
                     <div class="relative mb-3 group">
                         <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-300"></div>
-                        <img src="/assets/logo.svg" class="relative w-24 h-24 rounded-3xl shadow-2xl object-contain border border-indigo-400/30 transition-transform group-hover:scale-105 duration-300" alt="TakoTerminal">
+                        <img src="/assets/logo.png?v=2" class="relative w-28 h-28 rounded-3xl shadow-2xl object-contain border border-indigo-400/30 transition-transform group-hover:scale-105 duration-300" alt="TakoTerminal">
                     </div>
                     <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Müşteri Girişi İçin</span>
                     <h2 class="text-lg font-bold text-slate-200 mt-1">Kameranızla QR Kodu Okutun</h2>
@@ -1229,8 +1229,8 @@ def mobile_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
-        <link rel="apple-touch-icon" href="/assets/logo.svg">
+        <link rel="icon" type="image/png" href="/assets/logo.png?v=2">
+        <link rel="apple-touch-icon" href="/assets/logo.png?v=2">
         <title>TakoTerminal | Kolay Baskı</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -1244,7 +1244,7 @@ def mobile_page():
         <header class="bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 sticky top-0 z-30 shadow-lg shadow-black/40">
             <div class="max-w-md mx-auto flex items-center justify-between">
                 <div class="flex items-center space-x-3">
-                    <img src="/assets/logo.svg" class="w-10 h-10 rounded-xl shadow-md shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain" alt="TakoTerminal">
+                    <img src="/assets/logo.png?v=2" class="w-11 h-11 rounded-xl shadow-md shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain" alt="TakoTerminal">
                     <div>
                         <div class="flex items-center space-x-1.5">
                             <span class="text-base font-black tracking-tight bg-gradient-to-r from-indigo-300 via-sky-300 to-cyan-300 bg-clip-text text-transparent">TakoTerminal</span>
@@ -1267,7 +1267,7 @@ def mobile_page():
                 <div class="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 rounded-2xl border border-indigo-500/20 shadow-xl text-center flex flex-col items-center space-y-2">
                     <div class="relative group">
                         <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl blur opacity-30"></div>
-                        <img src="/assets/logo.svg" class="relative w-20 h-20 rounded-2xl shadow-xl object-contain border border-indigo-400/30" alt="TakoTerminal Logo">
+                        <img src="/assets/logo.png?v=2" class="relative w-24 h-24 rounded-2xl shadow-xl object-contain border border-indigo-400/30" alt="TakoTerminal Logo">
                     </div>
                     <div>
                         <h2 class="text-sm font-bold text-slate-100">Belgelerinizi Güvenle Yükleyin</h2>
@@ -1345,7 +1345,7 @@ def mobile_page():
             <div id="success-container" class="hidden space-y-5 text-center pt-2">
                 <div class="relative inline-block mx-auto">
                     <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-40"></div>
-                    <img src="/assets/logo.svg" class="relative w-20 h-20 rounded-3xl shadow-2xl object-contain border-2 border-emerald-400/40" alt="TakoTerminal">
+                    <img src="/assets/logo.png?v=2" class="relative w-24 h-24 rounded-3xl shadow-2xl object-contain border-2 border-emerald-400/40" alt="TakoTerminal">
                     <div class="absolute -bottom-1 -right-1 bg-emerald-500 text-slate-950 rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm shadow-lg ring-2 ring-slate-900">
                         ✓
                     </div>
