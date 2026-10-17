@@ -350,6 +350,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+ASSETS_DIR = BASE_DIR / "assets"
+ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+
+@app.get("/assets/{filename}")
+def get_asset(filename: str):
+    asset_path = ASSETS_DIR / filename
+    if not asset_path.exists():
+        raise HTTPException(status_code=404, detail="Asset not found")
+    media_type = "image/svg+xml" if filename.endswith(".svg") else "image/png"
+    return FileResponse(asset_path, media_type=media_type)
+
+@app.get("/favicon.ico")
+def get_favicon():
+    icon_path = ASSETS_DIR / "icon.svg"
+    if icon_path.exists():
+        return FileResponse(icon_path, media_type="image/svg+xml")
+    raise HTTPException(status_code=404, detail="Favicon not found")
+
 @app.get("/")
 def index():
     return HTMLResponse("""
@@ -357,20 +375,23 @@ def index():
     <html lang="tr">
     <head>
         <meta charset="UTF-8">
+        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
         <title>TakoTerminal</title>
         <style>
             body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0f172a; color: white; }
-            .card { background: #1e293b; padding: 2.5rem; border-radius: 1.25rem; text-align: center; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); }
+            .card { background: #1e293b; padding: 2.5rem; border-radius: 1.5rem; text-align: center; max-width: 480px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); border: 1px solid #334155; }
             a { display: block; margin: 1rem 0; padding: 1rem 1.5rem; border-radius: 0.75rem; text-decoration: none; font-weight: bold; font-size: 1.1rem; transition: transform 0.2s; }
             a:hover { transform: translateY(-2px); }
             .btn-kiosk { background: #6366f1; color: white; }
             .btn-mobile { background: #10b981; color: white; }
+            .logo-img { width: 110px; height: 110px; margin: 0 auto 1.25rem; display: block; border-radius: 1.75rem; box-shadow: 0 10px 25px rgba(99,102,241,0.3); }
         </style>
     </head>
     <body>
         <div class="card">
-            <h2>🖨️ TakoTerminal</h2>
-            <p style="color: #94a3b8;">Akıllı Kırtasiye Baskı ve Fotokopi Terminali</p>
+            <img src="/assets/logo.svg" alt="TakoTerminal" class="logo-img">
+            <h2 style="margin: 0; font-size: 1.75rem;">TakoTerminal</h2>
+            <p style="color: #94a3b8; margin: 0.5rem 0 1.5rem; font-size: 0.9rem;">Akıllı Kırtasiye Baskı ve Fotokopi Terminali</p>
             <a href="/kiosk" class="btn-kiosk">🖥️ Ana PC Kiosk Ekranı</a>
             <a href="/mobile" class="btn-mobile">📱 Müşteri Telefon Ekranı</a>
         </div>
@@ -655,6 +676,7 @@ def kiosk_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
         <title>TakoTerminal | Kiosk Paneli</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -668,7 +690,7 @@ def kiosk_page():
         <!-- ÜST BİLGİ ÇUBUĞU -->
         <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50 backdrop-blur">
             <div class="flex items-center space-x-3">
-                <span class="text-3xl">🖨️</span>
+                <img src="/assets/icon.svg" class="w-10 h-10 rounded-2xl shadow-lg ring-1 ring-indigo-500/30" alt="TakoTerminal Logo">
                 <div>
                     <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">TakoTerminal</h1>
                     <p class="text-xs text-slate-400">Canlı Kiosk & Çoklu Sipariş Takip Paneli</p>
@@ -1184,6 +1206,7 @@ def mobile_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
         <title>TakoTerminal | Kolay Baskı</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -1194,9 +1217,12 @@ def mobile_page():
     </head>
     <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans select-none antialiased">
         <!-- MOBİL ÜST BAR -->
-        <div class="bg-slate-950 border-b border-slate-800 px-5 py-4 text-center sticky top-0 z-30">
-            <h1 class="text-lg font-bold text-indigo-400">🖨️ TakoTerminal</h1>
-            <p class="text-[11px] text-slate-400">Belgelerinizi ekleyin, ayarlayın ve PIN koduyla teslim alın</p>
+        <div class="bg-slate-950 border-b border-slate-800 px-5 py-3.5 text-center sticky top-0 z-30">
+            <div class="flex items-center justify-center space-x-2">
+                <img src="/assets/icon.svg" class="w-6 h-6 rounded-md shadow" alt="TakoTerminal">
+                <h1 class="text-base font-bold text-indigo-400">TakoTerminal</h1>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-0.5">Belgelerinizi ekleyin, ayarlayın ve PIN koduyla teslim alın</p>
         </div>
 
         <div class="flex-1 p-4 max-w-md mx-auto w-full space-y-4">

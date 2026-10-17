@@ -1,7 +1,20 @@
-# 🖨️ TakoTerminal
+<p align="center">
+  <img src="assets/logo.png" width="180" alt="TakoTerminal Logo" style="border-radius: 28px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+</p>
 
-**Temassız, Akıllı QR Baskı ve Fotokopi Kiosk Sistemi**  
-*TakoTerminal, kırtasiye ve fotokopi merkezlerinde müşteri ile bilgisayar arasındaki kablo, WhatsApp ve flash bellek karmaşasını tamamen ortadan kaldıran; sıfır maliyetli, güvenli ve temassız bir baskı kiosk platformudur.*
+<h1 align="center">TakoTerminal</h1>
+
+<p align="center">
+  <strong>Temassız, Akıllı QR Baskı ve Fotokopi Kiosk Sistemi</strong><br>
+  <em>Kırtasiye ve baskı merkezleri için sıfır maliyetli, güvenli ve temassız baskı kiosk platformu</em>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python 3.10+">
+  <img src="https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi" alt="FastAPI">
+  <img src="https://img.shields.io/badge/Cloudflare-Quick%20Tunnel-F38020?logo=cloudflare" alt="Cloudflare Tunnel">
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
+</p>
 
 ---
 

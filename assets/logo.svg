@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Arka plan gradyanı -->
+    <radialGradient id="bgGlow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="60%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </radialGradient>
+
+    <!-- Ana neon gradyan -->
+    <linearGradient id="neonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <!-- İkincil parlak gradyan -->
+    <linearGradient id="laserGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ec4899" stop-opacity="0" />
+      <stop offset="30%" stop-color="#a855f7" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="70%" stop-color="#a855f7" />
+      <stop offset="100%" stop-color="#ec4899" stop-opacity="0" />
+    </linearGradient>
+
+    <!-- Kağıt gradyanı -->
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#cbd5e1" />
+    </linearGradient>
+
+    <!-- Işıma filtresi -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Dış Kalkan / Kutu -->
+  <rect width="512" height="512" rx="120" fill="url(#bgGlow)" />
+  <rect width="504" height="504" x="4" y="4" rx="116" fill="none" stroke="url(#neonGradient)" stroke-width="6" stroke-opacity="0.4" />
+
+  <!-- Neon Arka Işıma Halkası -->
+  <circle cx="256" cy="240" r="140" fill="none" stroke="url(#neonGradient)" stroke-width="2" stroke-opacity="0.2" stroke-dasharray="8 8" />
+
+  <!-- === TAKOTERMINAL MERKEZ EMBLEMİ === -->
+
+  <!-- Üst Kağıt / Belge Çıkışı (Giriş Tepsisi) -->
+  <g transform="translate(0, -10)">
+    <!-- Arkadaki 2. Belge -->
+    <rect x="200" y="90" width="112" height="70" rx="8" fill="#475569" opacity="0.6" transform="rotate(-6 256 125)" />
+    <!-- Öndeki Ana Belge -->
+    <rect x="186" y="95" width="140" height="90" rx="10" fill="url(#paperGrad)" />
+    <!-- Belge çizgileri -->
+    <line x1="206" y1="115" x2="260" y2="115" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" />
+    <line x1="206" y1="130" x2="306" y2="130" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
+    <line x1="206" y1="145" x2="286" y2="145" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" />
+  </g>
+
+  <!-- Yazıcı / Kiosk Ana Gövdesi (Stylized "T" Şekli) -->
+  <g>
+    <!-- Yazıcı Üst Ağzı (Slot) -->
+    <rect x="136" y="170" width="240" height="40" rx="14" fill="#1e293b" stroke="#334155" stroke-width="4" />
+    <rect x="176" y="185" width="160" height="10" rx="5" fill="#020617" />
+    <!-- Lazer Tarama Çizgisi -->
+    <rect x="160" y="188" width="192" height="4" fill="url(#laserGradient)" filter="url(#glow)" />
+  </g>
+
+  <!-- TAKO (Ahtapot) Yüzü & Kafa Yapısı -->
+  <g transform="translate(0, 15)">
+    <!-- Kafa Kubbesi -->
+    <path d="M 176 220 C 176 175, 336 175, 336 220 C 336 255, 310 270, 256 270 C 202 270, 176 255, 176 220 Z" 
+          fill="url(#neonGradient)" />
+
+    <!-- Sibernetik Gözlük / Vizör -->
+    <rect x="196" y="210" width="120" height="34" rx="17" fill="#020617" stroke="#38bdf8" stroke-width="3" />
+    <!-- Dijital Göz Işıltıları (Göz Kırpma / Odak) -->
+    <circle cx="230" cy="227" r="7" fill="#38bdf8" filter="url(#glow)" />
+    <circle cx="282" cy="227" r="7" fill="#38bdf8" filter="url(#glow)" />
+    <circle cx="232" cy="225" r="2.5" fill="#ffffff" />
+    <circle cx="284" cy="225" r="2.5" fill="#ffffff" />
+  </g>
+
+  <!-- SİBERNETİK DOKUNAÇLAR (Tentacles - Kağıt Taşıyan Kollar) -->
+  <!-- Sol Dokunaçlar -->
+  <path d="M 190 260 C 150 270, 110 300, 120 340 C 128 370, 170 365, 185 335 C 195 315, 180 290, 205 275" 
+        fill="none" stroke="url(#neonGradient)" stroke-width="18" stroke-linecap="round" />
+  <circle cx="120" cy="340" r="4" fill="#ffffff" opacity="0.8" />
+  <circle cx="145" cy="355" r="4" fill="#ffffff" opacity="0.8" />
+
+  <!-- Sağ Dokunaçlar -->
+  <path d="M 322 260 C 362 270, 402 300, 392 340 C 384 370, 342 365, 327 335 C 317 315, 332 290, 307 275" 
+        fill="none" stroke="url(#neonGradient)" stroke-width="18" stroke-linecap="round" />
+  <circle cx="392" cy="340" r="4" fill="#ffffff" opacity="0.8" />
+  <circle cx="367" cy="355" r="4" fill="#ffffff" opacity="0.8" />
+
+  <!-- Orta Alt Dokunaçlar (Baskı Tepsisini Destekleyen Kollar) -->
+  <path d="M 230 280 C 210 300, 200 340, 225 365 C 240 380, 260 370, 256 345" 
+        fill="none" stroke="url(#neonGradient)" stroke-width="14" stroke-linecap="round" />
+  <path d="M 282 280 C 302 300, 312 340, 287 365 C 272 380, 252 370, 256 345" 
+        fill="none" stroke="url(#neonGradient)" stroke-width="14" stroke-linecap="round" />
+
+  <!-- Alt Çıkış Tepsisi ve Çıkan Yeni Baskı Sayfası -->
+  <g transform="translate(0, 30)">
+    <!-- Çıkış Tepsisi -->
+    <rect x="156" y="340" width="200" height="20" rx="8" fill="#1e293b" stroke="#334155" stroke-width="3" />
+    
+    <!-- Çıkan Taze Baskı Sayfası -->
+    <rect x="176" y="320" width="160" height="75" rx="8" fill="url(#paperGrad)" />
+    
+    <!-- Çıkan Sayfa Üzerindeki QR Kod Motifi -->
+    <g transform="translate(196, 335)">
+      <rect x="0" y="0" width="22" height="22" rx="3" fill="#0f172a" />
+      <rect x="4" y="4" width="14" height="14" rx="1" fill="#ffffff" />
+      <rect x="8" y="8" width="6" height="6" fill="#0f172a" />
+
+      <!-- Belge Metin Çizgileri -->
+      <line x1="32" y1="6" x2="105" y2="6" stroke="#475569" stroke-width="3" stroke-linecap="round" />
+      <line x1="32" y1="14" x2="95" y2="14" stroke="#64748b" stroke-width="3" stroke-linecap="round" />
+      <line x1="32" y1="22" x2="80" y2="22" stroke="#94a3b8" stroke-width="3" stroke-linecap="round" />
+      <line x1="0" y1="34" x2="110" y2="34" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" />
+      <line x1="0" y1="44" x2="70" y2="44" stroke="#cbd5e1" stroke-width="3" stroke-linecap="round" />
+    </g>
+  </g>
+
+  <!-- Yazı / Logo İsmi (Alt Kısım) -->
+  <text x="256" y="465" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="4">
+    TAKO<tspan fill="#38bdf8">TERMINAL</tspan>
+  </text>
+</svg>
