@@ -123,8 +123,8 @@
     </g>
   </g>
 
-  <!-- Yazı / Logo İsmi (Alt Kısım) -->
-  <text x="256" y="465" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="34" fill="#ffffff" text-anchor="middle" letter-spacing="4">
-    TAKO<tspan fill="#38bdf8">TERMINAL</tspan>
-  </text>
-</svg>
+    <!-- Yazı / Logo İsmi (Alt Kısım) -->
+    <text x="256" y="465" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-weight="900" font-size="35" fill="#ffffff" text-anchor="middle" letter-spacing="4">
+      <tspan fill="#ffffff">TAKO</tspan><tspan fill="#38bdf8">TERMINAL</tspan>
+    </text>
+  </svg>

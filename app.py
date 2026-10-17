@@ -358,14 +358,25 @@ def get_asset(filename: str):
     asset_path = ASSETS_DIR / filename
     if not asset_path.exists():
         raise HTTPException(status_code=404, detail="Asset not found")
-    media_type = "image/svg+xml" if filename.endswith(".svg") else "image/png"
-    return FileResponse(asset_path, media_type=media_type)
+    if filename.endswith(".svg"):
+        media_type = "image/svg+xml"
+    elif filename.endswith((".jpg", ".jpeg")):
+        media_type = "image/jpeg"
+    elif filename.endswith(".png"):
+        media_type = "image/png"
+    elif filename.endswith(".ico"):
+        media_type = "image/x-icon"
+    else:
+        media_type = "application/octet-stream"
+    return FileResponse(asset_path, media_type=media_type, headers={"Cache-Control": "public, max-age=86400"})
 
 @app.get("/favicon.ico")
 def get_favicon():
-    icon_path = ASSETS_DIR / "icon.svg"
-    if icon_path.exists():
-        return FileResponse(icon_path, media_type="image/svg+xml")
+    for candidate in ["logo.svg", "icon.svg", "logo.png"]:
+        p = ASSETS_DIR / candidate
+        if p.exists():
+            media_type = "image/svg+xml" if candidate.endswith(".svg") else "image/png"
+            return FileResponse(p, media_type=media_type)
     raise HTTPException(status_code=404, detail="Favicon not found")
 
 @app.get("/")
@@ -375,7 +386,7 @@ def index():
     <html lang="tr">
     <head>
         <meta charset="UTF-8">
-        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
         <title>TakoTerminal</title>
         <style>
             body { font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #0f172a; color: white; }
@@ -676,7 +687,7 @@ def kiosk_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
         <title>TakoTerminal | Kiosk Paneli</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -689,10 +700,10 @@ def kiosk_page():
     <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none">
         <!-- ÜST BİLGİ ÇUBUĞU -->
         <header class="bg-slate-900/90 border-b border-slate-800 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50 backdrop-blur">
-            <div class="flex items-center space-x-3">
-                <img src="/assets/icon.svg" class="w-10 h-10 rounded-2xl shadow-lg ring-1 ring-indigo-500/30" alt="TakoTerminal Logo">
+            <div class="flex items-center space-x-3.5">
+                <img src="/assets/logo.svg" class="w-11 h-11 rounded-2xl shadow-lg shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain transition-transform hover:scale-105 duration-300" alt="TakoTerminal Logo">
                 <div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">TakoTerminal</h1>
+                    <h1 class="text-xl font-black bg-gradient-to-r from-indigo-300 via-sky-300 to-cyan-300 bg-clip-text text-transparent tracking-tight">TakoTerminal</h1>
                     <p class="text-xs text-slate-400">Canlı Kiosk & Çoklu Sipariş Takip Paneli</p>
                 </div>
             </div>
@@ -719,7 +730,11 @@ def kiosk_page():
         <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
             <!-- SOL PANEL: DİNAMİK QR KODU VE BAĞLANTI AYARI -->
             <div class="w-full lg:w-96 bg-slate-900 p-6 border-r border-slate-800 flex flex-col items-center justify-start space-y-6">
-                <div class="w-full text-center">
+                <div class="w-full text-center flex flex-col items-center">
+                    <div class="relative mb-3 group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-3xl blur opacity-30 group-hover:opacity-60 transition duration-300"></div>
+                        <img src="/assets/logo.svg" class="relative w-24 h-24 rounded-3xl shadow-2xl object-contain border border-indigo-400/30 transition-transform group-hover:scale-105 duration-300" alt="TakoTerminal">
+                    </div>
                     <span class="text-xs font-semibold text-indigo-400 uppercase tracking-wider">Müşteri Girişi İçin</span>
                     <h2 class="text-lg font-bold text-slate-200 mt-1">Kameranızla QR Kodu Okutun</h2>
                     <p class="text-xs text-slate-400 mt-1">Müşteriler 4G/5G mobil internetiyle bağlanabilir.</p>
@@ -1206,7 +1221,8 @@ def mobile_page():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-        <link rel="icon" type="image/svg+xml" href="/assets/icon.svg">
+        <link rel="icon" type="image/svg+xml" href="/assets/logo.svg">
+        <link rel="apple-touch-icon" href="/assets/logo.svg">
         <title>TakoTerminal | Kolay Baskı</title>
         <script src="https://cdn.tailwindcss.com"></script>
         <style>
@@ -1217,17 +1233,45 @@ def mobile_page():
     </head>
     <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans select-none antialiased">
         <!-- MOBİL ÜST BAR -->
-        <div class="bg-slate-950 border-b border-slate-800 px-5 py-3.5 text-center sticky top-0 z-30">
-            <div class="flex items-center justify-center space-x-2">
-                <img src="/assets/icon.svg" class="w-6 h-6 rounded-md shadow" alt="TakoTerminal">
-                <h1 class="text-base font-bold text-indigo-400">TakoTerminal</h1>
+        <header class="bg-slate-950/95 backdrop-blur-md border-b border-slate-800/80 px-4 py-3 sticky top-0 z-30 shadow-lg shadow-black/40">
+            <div class="max-w-md mx-auto flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <img src="/assets/logo.svg" class="w-10 h-10 rounded-xl shadow-md shadow-indigo-500/25 ring-1 ring-cyan-500/40 object-contain" alt="TakoTerminal">
+                    <div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="text-base font-black tracking-tight bg-gradient-to-r from-indigo-300 via-sky-300 to-cyan-300 bg-clip-text text-transparent">TakoTerminal</span>
+                            <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded-full bg-cyan-950 text-cyan-300 border border-cyan-800/60">Mobil</span>
+                        </div>
+                        <p class="text-[11px] text-slate-400 leading-tight">Temassız Akıllı Baskı Noktası</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-1.5 text-[11px] bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-full text-emerald-400 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Canlı</span>
+                </div>
             </div>
-            <p class="text-[11px] text-slate-400 mt-0.5">Belgelerinizi ekleyin, ayarlayın ve PIN koduyla teslim alın</p>
-        </div>
+        </header>
 
         <div class="flex-1 p-4 max-w-md mx-auto w-full space-y-4">
             <!-- ADIM 1 & FORM KUTUSU -->
             <div id="form-container" class="space-y-4">
+                <!-- MARKA / KARŞILAMA HERO KARTI -->
+                <div class="bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 p-4 rounded-2xl border border-indigo-500/20 shadow-xl text-center flex flex-col items-center space-y-2">
+                    <div class="relative group">
+                        <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-2xl blur opacity-30"></div>
+                        <img src="/assets/logo.svg" class="relative w-20 h-20 rounded-2xl shadow-xl object-contain border border-indigo-400/30" alt="TakoTerminal Logo">
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-100">Belgelerinizi Güvenle Yükleyin</h2>
+                        <p class="text-xs text-slate-400 mt-0.5">Yükleyin, baskı ayarlarınızı yapın, PIN koduyla anında teslim alın.</p>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-[10px] text-indigo-300 font-medium">
+                        <span class="bg-indigo-950/80 px-2 py-0.5 rounded-md border border-indigo-800/40">⚡ Hızlı Aktarım</span>
+                        <span class="bg-cyan-950/80 px-2 py-0.5 rounded-md border border-cyan-800/40">🛡️ KVKK 15 Dk İmha</span>
+                        <span class="bg-slate-800 px-2 py-0.5 rounded-md border border-slate-700">📑 Çoklu Belge</span>
+                    </div>
+                </div>
+
                 <!-- MÜŞTERİ ADI -->
                 <div class="bg-slate-800/90 p-4 rounded-2xl border border-slate-700/60 shadow-lg">
                     <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-1.5">Müşteri Adınız ve Soyadınız <span class="text-rose-400">*</span></label>
@@ -1290,9 +1334,13 @@ def mobile_page():
             </div>
 
             <!-- ADIM 2: BAŞARI VE PIN KODU EKRANI -->
-            <div id="success-container" class="hidden space-y-5 text-center pt-4">
-                <div class="bg-emerald-500/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto text-3xl border border-emerald-500/40">
-                    ✅
+            <div id="success-container" class="hidden space-y-5 text-center pt-2">
+                <div class="relative inline-block mx-auto">
+                    <div class="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-3xl blur opacity-40"></div>
+                    <img src="/assets/logo.svg" class="relative w-20 h-20 rounded-3xl shadow-2xl object-contain border-2 border-emerald-400/40" alt="TakoTerminal">
+                    <div class="absolute -bottom-1 -right-1 bg-emerald-500 text-slate-950 rounded-full w-7 h-7 flex items-center justify-center font-bold text-sm shadow-lg ring-2 ring-slate-900">
+                        ✓
+                    </div>
                 </div>
 
                 <div>
