@@ -16,6 +16,15 @@
   <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
 </p>
 
+<p align="center">
+  <a href="https://github.com/ttalha1/TakoTerminal/releases/latest">
+    <img src="https://img.shields.io/badge/⚡_Hemen_İndir-Windows_EXE_(v1.0.0)-6366f1?style=for-the-badge&logo=windows&logoColor=white" alt="TakoTerminal EXE İndir">
+  </a>
+</p>
+
+> [!TIP]
+> **🚀 Kurulumsuz Kullanım (Hızlı Başlangıç):** Python veya herhangi bir kodlama ortamı kurmanıza gerek yoktur! GitHub sayfasının sağ tarafındaki **[Releases (Sürümler)](https://github.com/ttalha1/TakoTerminal/releases)** bölümünden en güncel `TakoTerminal.exe` dosyasını doğrudan indirip çift tıklayarak çalıştırabilirsiniz.
+
 ---
 
 ## 🌟 Neden TakoTerminal?

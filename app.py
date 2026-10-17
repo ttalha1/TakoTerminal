@@ -43,7 +43,16 @@ except ImportError:
 # 1. KONFİGÜRASYON VE TARİFE
 # ==============================================================================
 
-BASE_DIR = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+    BUNDLE_DIR = Path(getattr(sys, "_MEIPASS", BASE_DIR))
+    ASSETS_DIR = BUNDLE_DIR / "assets"
+    if not ASSETS_DIR.exists():
+        ASSETS_DIR = BASE_DIR / "assets"
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+    ASSETS_DIR = BASE_DIR / "assets"
+
 UPLOAD_DIR = BASE_DIR / "kiosk_uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -350,7 +359,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-ASSETS_DIR = BASE_DIR / "assets"
 ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
 @app.get("/assets/{filename}")

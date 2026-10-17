@@ -15,7 +15,11 @@ if sys.platform == "win32":
     except Exception:
         pass
 
-BASE_DIR = Path(__file__).resolve().parent
+if getattr(sys, "frozen", False):
+    BASE_DIR = Path(sys.executable).resolve().parent
+else:
+    BASE_DIR = Path(__file__).resolve().parent
+
 
 def get_local_ip():
     try:
