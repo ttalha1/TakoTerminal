@@ -452,7 +452,13 @@ def shutdown_terminal():
         if sys.platform == "win32":
             try:
                 import subprocess
-                subprocess.run(["taskkill", "/F", "/IM", "cloudflared.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                subprocess.run(
+                    ["taskkill", "/F", "/IM", "cloudflared.exe"],
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
             except Exception:
                 pass
         os._exit(0)

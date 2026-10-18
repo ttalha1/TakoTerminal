@@ -54,16 +54,37 @@ def get_local_ip():
         return "127.0.0.1"
 
 def cleanup_zombies_and_port():
-    """Önceki oturumlardan kalan cloudflared ve port 8000 süreçlerini temizler."""
+    """Önceki oturumlardan kalan cloudflared ve port 8000 süreçlerini tamamen sessizce (cmd penceresi açmadan) temizler."""
     if sys.platform == "win32":
+        creationflags = subprocess.CREATE_NO_WINDOW
         try:
-            subprocess.run(["taskkill", "/F", "/IM", "cloudflared.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            subprocess.run(
+                ["taskkill", "/F", "/IM", "cloudflared.exe"],
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=creationflags
+            )
         except Exception:
             pass
         try:
-            current_pid = os.getpid()
-            cmd = f'powershell -WindowStyle Hidden -Command "Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | Where-Object {{ $_ -ne {current_pid} }} | ForEach-Object {{ Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }}"'
-            subprocess.run(cmd, shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            current_pid = str(os.getpid())
+            ps_cmd = [
+                "powershell.exe",
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-WindowStyle", "Hidden",
+                "-Command",
+                f"Get-NetTCPConnection -LocalPort 8000 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | Where-Object {{ $_ -ne {current_pid} }} | ForEach-Object {{ Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }}"
+            ]
+            subprocess.run(
+                ps_cmd,
+                stdin=subprocess.DEVNULL,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                creationflags=creationflags
+            )
         except Exception:
             pass
 
