@@ -13,7 +13,7 @@
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?logo=python" alt="Python 3.10+">
   <img src="https://img.shields.io/badge/FastAPI-0.110%2B-009688?logo=fastapi" alt="FastAPI">
   <img src="https://img.shields.io/badge/Cloudflare-Quick%20Tunnel-F38020?logo=cloudflare" alt="Cloudflare Tunnel">
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License">
+  <img src="https://img.shields.io/badge/License-PolyForm%20Noncommercial-red" alt="PolyForm Noncommercial License">
 </p>
 
 <p align="center">
@@ -118,7 +118,7 @@ TakoTerminal/
 ├── config.example.json        # Örnek fiyatlandırma şablonu
 ├── requirements.txt           # Python bağımlılıkları listesi
 ├── .gitignore                 # Gizli anahtarlar ve geçici dosyalar için git yoksayma
-├── LICENSE                    # MIT Açık Kaynak Lisansı
+├── LICENSE                    # PolyForm Noncommercial Lisansı (Ticari Kullanım Yasak)
 └── README.md                  # Proje dokümantasyonu
 ```
 
@@ -126,4 +126,7 @@ TakoTerminal/
 
 ## 📄 Lisans
 
-Bu proje **MIT Lisansı** ile lisanslanmıştır. Detaylar için `LICENSE` dosyasına göz atabilirsiniz.
+Bu proje **[PolyForm Noncommercial License 1.0.0](LICENSE)** ile lisanslanmıştır.
+
+- ✅ **İzin Verilenler:** Kaynak kodunu görüntüleme, değiştirme, çatallama (fork), kişisel kullanım, eğitim, araştırma, hobi projeleri ve ticari olmayan tüm geliştirmeler serbesttir.
+- 🚫 **Yasak Olanlar:** Telif hakkı sahibinden yazılı izin alınmaksızın projenin doğrudan veya dolaylı olarak satılması, ticari işletmelerde kullanılması veya ücretli bir ürüne dönüştürülmesi kesinlikle yasaktır.
