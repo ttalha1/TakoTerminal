@@ -342,15 +342,8 @@ async def auto_cleanup_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    for tf in [TUNNEL_TEMP_FILE, BASE_DIR / "tunnel_url.txt"]:
-        if tf.exists():
-            try:
-                content = tf.read_text(encoding="utf-8").strip()
-                if content.startswith("http"):
-                    SERVER_STATE["tunnel_url"] = content
-                    break
-            except Exception:
-                pass
+    # Ephemeral quick tunnel: Eski oturumların ölü URL'lerini yükleme
+    SERVER_STATE["tunnel_url"] = ""
     cleanup_task = asyncio.create_task(auto_cleanup_loop())
     yield
     cleanup_task.cancel()

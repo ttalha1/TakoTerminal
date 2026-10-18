@@ -10,7 +10,12 @@ import threading
 import webbrowser
 from pathlib import Path
 
-# PyInstaller --windowed / --noconsole modunda stdout/stderr koruması
+# PyInstaller --windowed / --noconsole modunda stdin/stdout/stderr koruması
+if sys.stdin is None:
+    try:
+        sys.stdin = open(os.devnull, "r")
+    except Exception:
+        pass
 if sys.stdout is None:
     try:
         sys.stdout = open(os.devnull, "w", encoding="utf-8")
@@ -92,42 +97,39 @@ def get_cloudflared_executable() -> Path:
 
     return base_cf
 
-def watch_cloudflared_log(proc, log_file: Path):
-    """cloudflared logunu dinleyerek trycloudflare.com URL'ini yakalar ve Uvicorn'a iletir."""
-    pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
-    found_url = None
-    
-    for _ in range(50):
-        time.sleep(0.5)
-        if not log_file.exists():
-            continue
-        try:
-            with open(log_file, "r", encoding="utf-8", errors="ignore") as f:
-                content = f.read()
-                matches = pattern.findall(content)
-                if matches:
-                    found_url = matches[-1]
-                    break
-        except Exception:
-            pass
+class CloudflareTunnelSupervisor:
+    """cloudflared sürecini --protocol http2 ile yöneten, URL'i yakalayan ve çökme/kopma durumunda otomatik yeniden başlatan yönetici."""
+    def __init__(self, cf_exe: Path, log_file: Path):
+        self.cf_exe = cf_exe
+        self.log_file = log_file
+        self.current_proc = None
+        self.stop_event = threading.Event()
+        self.supervisor_thread = None
+        self.current_url = None
 
-    if found_url:
-        # Tünel URL'sini hem Temp hem BASE_DIR dosyalarına güvenle yaz
-        try:
-            TUNNEL_TEMP_FILE.write_text(found_url, encoding="utf-8")
-        except Exception:
-            pass
-        try:
-            (BASE_DIR / "tunnel_url.txt").write_text(found_url, encoding="utf-8")
-        except Exception:
-            pass
+    def start(self):
+        self.supervisor_thread = threading.Thread(target=self._run, daemon=True)
+        self.supervisor_thread.start()
 
-        # FastAPI uvicorn ayağa kalkana kadar döngüde bildirmeyi dene (en fazla 30 saniye)
+    def stop(self):
+        self.stop_event.set()
+        if self.current_proc:
+            try:
+                self.current_proc.terminate()
+                self.current_proc.wait(timeout=2)
+            except Exception:
+                try:
+                    self.current_proc.kill()
+                except Exception:
+                    pass
+
+    def _notify_api(self, url: str):
         import urllib.request
         import json
-        payload = json.dumps({"url": found_url}).encode("utf-8")
-
+        payload = json.dumps({"url": url}).encode("utf-8")
         for _ in range(30):
+            if self.stop_event.is_set():
+                break
             try:
                 req = urllib.request.Request(
                     "http://127.0.0.1:8000/api/tunnel-url",
@@ -139,6 +141,81 @@ def watch_cloudflared_log(proc, log_file: Path):
                         break
             except Exception:
                 time.sleep(1.0)
+
+    def _run(self):
+        pattern = re.compile(r"https://[a-zA-Z0-9-]+\.trycloudflare\.com")
+        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
+
+        while not self.stop_event.is_set():
+            if self.log_file.exists():
+                try:
+                    self.log_file.unlink()
+                except Exception:
+                    pass
+
+            cf_cmd = [
+                str(self.cf_exe),
+                "tunnel",
+                "--protocol", "http2",
+                "--edge-ip-version", "4",
+                "--no-autoupdate",
+                "--url", "http://127.0.0.1:8000",
+                "--logfile", str(self.log_file)
+            ]
+
+            try:
+                self.current_proc = subprocess.Popen(
+                    cf_cmd,
+                    stdin=subprocess.DEVNULL,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=creationflags
+                )
+            except Exception:
+                time.sleep(3)
+                continue
+
+            found_url = None
+            for _ in range(60):
+                if self.stop_event.is_set() or self.current_proc.poll() is not None:
+                    break
+                time.sleep(0.5)
+                if not self.log_file.exists():
+                    continue
+                try:
+                    with open(self.log_file, "r", encoding="utf-8", errors="ignore") as f:
+                        content = f.read()
+                        matches = pattern.findall(content)
+                        if matches:
+                            found_url = matches[-1]
+                            break
+                except Exception:
+                    pass
+
+            if found_url and not self.stop_event.is_set():
+                self.current_url = found_url
+                try:
+                    TUNNEL_TEMP_FILE.write_text(found_url, encoding="utf-8")
+                except Exception:
+                    pass
+                try:
+                    (BASE_DIR / "tunnel_url.txt").write_text(found_url, encoding="utf-8")
+                except Exception:
+                    pass
+
+                self._notify_api(found_url)
+
+            # Süreç çalışır durumda olduğu sürece izle
+            while not self.stop_event.is_set():
+                if self.current_proc.poll() is not None:
+                    # cloudflared sonlandı, döngü yeniden başlatacak
+                    break
+                time.sleep(1.0)
+
+            if self.stop_event.is_set():
+                break
+            else:
+                time.sleep(2)
 
 def main():
     # 0. Eski kalıntıları temizle
@@ -160,23 +237,12 @@ def main():
         except Exception:
             pass
 
-    # 1. Cloudflare Tünel Sürecini Başlat
+    # 1. Cloudflare Tünel Sürecini HTTP/2 Protokolü ile Başlat
     cf_exe = get_cloudflared_executable()
-    cf_proc = None
+    cf_supervisor = None
     if cf_exe.exists():
-        cf_cmd = [str(cf_exe), "tunnel", "--url", "http://127.0.0.1:8000", "--logfile", str(CF_LOG_FILE)]
-        creationflags = subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0
-        try:
-            cf_proc = subprocess.Popen(
-                cf_cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                creationflags=creationflags
-            )
-            watcher_thread = threading.Thread(target=watch_cloudflared_log, args=(cf_proc, CF_LOG_FILE), daemon=True)
-            watcher_thread.start()
-        except Exception:
-            pass
+        cf_supervisor = CloudflareTunnelSupervisor(cf_exe, CF_LOG_FILE)
+        cf_supervisor.start()
 
     # 2. Tarayıcıda Kiosk Ekranını Otomatik Aç (1.2 saniye sonra)
     def open_browser():
@@ -193,9 +259,9 @@ def main():
     except KeyboardInterrupt:
         pass
     finally:
-        if cf_proc:
+        if cf_supervisor:
             try:
-                cf_proc.terminate()
+                cf_supervisor.stop()
             except Exception:
                 pass
         cleanup_zombies_and_port()
