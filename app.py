@@ -9,7 +9,7 @@ import asyncio
 import shutil
 import socket
 import json
-import zipfile
+import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -52,6 +52,9 @@ if getattr(sys, "frozen", False):
 else:
     BASE_DIR = Path(__file__).resolve().parent
     ASSETS_DIR = BASE_DIR / "assets"
+
+TEMP_DIR = Path(tempfile.gettempdir())
+TUNNEL_TEMP_FILE = TEMP_DIR / "takoterminal_tunnel.txt"
 
 UPLOAD_DIR = BASE_DIR / "kiosk_uploads"
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -339,12 +342,15 @@ async def auto_cleanup_loop():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    tunnel_file = BASE_DIR / "tunnel_url.txt"
-    if tunnel_file.exists():
-        try:
-            SERVER_STATE["tunnel_url"] = tunnel_file.read_text(encoding="utf-8").strip()
-        except Exception:
-            pass
+    for tf in [TUNNEL_TEMP_FILE, BASE_DIR / "tunnel_url.txt"]:
+        if tf.exists():
+            try:
+                content = tf.read_text(encoding="utf-8").strip()
+                if content.startswith("http"):
+                    SERVER_STATE["tunnel_url"] = content
+                    break
+            except Exception:
+                pass
     cleanup_task = asyncio.create_task(auto_cleanup_loop())
     yield
     cleanup_task.cancel()
@@ -429,7 +435,13 @@ def get_config():
 @app.post("/api/tunnel-url")
 async def set_tunnel_url(data: dict):
     url = data.get("url", "").strip()
+    if url.endswith("/"):
+        url = url[:-1]
     SERVER_STATE["tunnel_url"] = url
+    try:
+        TUNNEL_TEMP_FILE.write_text(url, encoding="utf-8")
+    except Exception:
+        pass
     try:
         (BASE_DIR / "tunnel_url.txt").write_text(url, encoding="utf-8")
     except Exception:
@@ -439,6 +451,21 @@ async def set_tunnel_url(data: dict):
         "tunnel_url": url
     })
     return {"status": "ok", "tunnel_url": url}
+
+@app.post("/api/shutdown")
+def shutdown_terminal():
+    def stop():
+        time.sleep(0.5)
+        if sys.platform == "win32":
+            try:
+                import subprocess
+                subprocess.run(["taskkill", "/F", "/IM", "cloudflared.exe"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            except Exception:
+                pass
+        os._exit(0)
+    import threading
+    threading.Thread(target=stop, daemon=True).start()
+    return {"status": "ok"}
 
 @app.post("/api/tariff")
 async def update_tariff(data: dict):
@@ -731,6 +758,10 @@ def kiosk_page():
                 <button id="audio-enable-btn" onclick="toggleAudio()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer shadow">
                     🔔 Zil Açık
                 </button>
+                <button id="shutdown-btn" onclick="shutdownServer()" class="bg-red-950/80 hover:bg-red-900 border border-red-800/60 text-red-200 text-xs px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer shadow flex items-center space-x-1" title="TakoTerminal'i tamamen kapatır">
+                    <span>🛑</span>
+                    <span>Sistemi Kapat</span>
+                </button>
             </div>
         </header>
 
@@ -993,6 +1024,7 @@ def kiosk_page():
                 });
             }
 
+            let hasValidTunnel = false;
             async function fetchConfig() {
                 try {
                     const res = await fetch('/api/config');
@@ -1004,18 +1036,30 @@ def kiosk_page():
 
                     let target = "";
                     if (data.tunnel_url && data.tunnel_url.startsWith("http")) {
-                        target = data.tunnel_url + "/mobile";
-                        document.getElementById('tunnel-input').value = data.tunnel_url;
-                        document.getElementById('link-type-badge').innerText = "Cloudflare 4G/5G";
-                        document.getElementById('link-type-badge').className = "px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-300";
+                        hasValidTunnel = true;
+                        target = data.tunnel_url.replace(/\/+$/, "") + "/mobile";
+                        const inputEl = document.getElementById('tunnel-input');
+                        if (inputEl) inputEl.value = data.tunnel_url;
+                        const badge = document.getElementById('link-type-badge');
+                        if (badge) {
+                            badge.innerText = "Cloudflare 4G/5G Aktif";
+                            badge.className = "px-2 py-0.5 rounded text-[10px] bg-emerald-900 text-emerald-300 font-bold border border-emerald-700/60";
+                        }
+                        updateQRCode(target);
+                        return true;
                     } else {
                         target = "http://" + data.local_ip + ":8000/mobile";
-                        document.getElementById('link-type-badge').innerText = "Yerel Wi-Fi";
-                        document.getElementById('link-type-badge').className = "px-2 py-0.5 rounded text-[10px] bg-indigo-900 text-indigo-300";
+                        const badge = document.getElementById('link-type-badge');
+                        if (badge && !hasValidTunnel) {
+                            badge.innerText = "Tünel Başlatılıyor...";
+                            badge.className = "px-2 py-0.5 rounded text-[10px] bg-amber-900 text-amber-300 animate-pulse font-medium";
+                        }
+                        updateQRCode(target);
+                        return false;
                     }
-                    updateQRCode(target);
                 } catch(e) {
                     console.error("Config fetch error", e);
+                    return false;
                 }
             }
 
@@ -1184,6 +1228,22 @@ def kiosk_page():
                 loadOrders();
             }
 
+            async function shutdownServer() {
+                if (!confirm("TakoTerminal uygulamasını ve bağlantıları tamamen kapatmak istiyor musunuz?")) return;
+                try {
+                    await fetch('/api/shutdown', { method: 'POST' });
+                } catch(e) {}
+                document.body.innerHTML = `
+                <div class="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 text-center select-none font-sans">
+                    <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl max-w-sm space-y-3 shadow-2xl">
+                        <span class="text-5xl block">🛑</span>
+                        <h2 class="text-xl font-bold text-slate-100">TakoTerminal Kapatıldı</h2>
+                        <p class="text-xs text-slate-400">Sunucu ve arka plan tünelleri güvenle durduruldu. Bu tarayıcı sekmesini kapatabilirsiniz.</p>
+                    </div>
+                </div>
+                `;
+            }
+
             function setupWebSocket() {
                 const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                 const ws = new WebSocket(`${proto}//${window.location.host}/ws/kiosk`);
@@ -1197,6 +1257,8 @@ def kiosk_page():
                         loadOrders();
                     } else if (data.event === "TARIFF_UPDATED" && data.tariff) {
                         currentTariff = data.tariff;
+                    } else if (data.event === "TUNNEL_UPDATED") {
+                        fetchConfig();
                     }
                 };
 
@@ -1211,6 +1273,16 @@ def kiosk_page():
                 loadOrders();
                 setupWebSocket();
                 setInterval(loadOrders, 10000);
+
+                // Tünel hazır olana kadar her 1.5 saniyede bir otomatik kontrol et
+                let pollTries = 0;
+                const tunnelPoller = setInterval(async () => {
+                    pollTries++;
+                    const success = await fetchConfig();
+                    if (success || pollTries > 40) {
+                        clearInterval(tunnelPoller);
+                    }
+                }, 1500);
             });
         </script>
     </body>
