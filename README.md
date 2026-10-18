@@ -99,7 +99,7 @@ Geleneksel kırtasiyelerde müşterilerin belge yazdırması için WhatsApp'tan 
    ```bash
    python run_kiosk.py
    ```
-   *Veya doğrudan **`TakoTerminal_Baslat.bat`** dosyasına çift tıklayabilirsiniz!*
+   *(Kodlarla uğraşmadan tek tıkla çalıştırmak için sağdaki **Releases** bölümünden doğrudan `TakoTerminal.exe` indirebilirsiniz).*
 
 Sistem başlatıldığında:
 - 4G/5G tünel motoru (`cloudflared.exe`) yoksa ilk çalıştırmada otomatik olarak indirilir.
@@ -112,12 +112,13 @@ Sistem başlatıldığında:
 
 ```text
 TakoTerminal/
+├── assets/                    # Logo, amblem ve simge dosyaları (SVG, PNG, ICO)
 ├── app.py                     # Ana FastAPI sunucusu, API endpoint'leri ve Web UI'ları
 ├── run_kiosk.py               # Cloudflare tünel süpervizörü ve otomatik başlatıcı
-├── TakoTerminal_Baslat.bat    # Tek tıkla Windows başlatıcı kısayolu
 ├── config.example.json        # Örnek fiyatlandırma şablonu
 ├── requirements.txt           # Python bağımlılıkları listesi
 ├── .gitignore                 # Gizli anahtarlar ve geçici dosyalar için git yoksayma
+├── LICENSE                    # MIT Açık Kaynak Lisansı
 └── README.md                  # Proje dokümantasyonu
 ```
 
